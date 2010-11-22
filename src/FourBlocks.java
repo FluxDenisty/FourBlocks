@@ -31,6 +31,7 @@ public class FourBlocks extends JFrame{
 	Block.blockType[][] grid;
 	static FourBlocks instance;
 	Boolean running;
+	Boolean candrop;
 	
 	public static void main(String[] args) {
 		lib = new BlockLib();
@@ -70,7 +71,9 @@ public class FourBlocks extends JFrame{
 			@Override
 			public void keyReleased(KeyEvent arg0) {
 				// TODO Auto-generated method stub
-				
+				if (arg0.getKeyCode() == KeyEvent.VK_SPACE){
+					candrop = true;
+				}
 			}
 			
 			@Override
@@ -86,10 +89,16 @@ public class FourBlocks extends JFrame{
 					}else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT){
 						right();
 					}else if (arg0.getKeyCode() == KeyEvent.VK_SPACE){
-						fall();
+							fall();
 					}
 					paintBlock(blockBoard.getGraphics(), active);
 					canMove = true;
+				}else if (!running && arg0.getKeyCode() == KeyEvent.VK_SPACE){
+					header.setText("BEGIN");
+					active = new Block();
+					paintBlock(blockBoard.getGraphics(), active);
+					gameClock.start();
+					running = true;
 				}
 			}
 		};
@@ -102,6 +111,7 @@ public class FourBlocks extends JFrame{
 					active = new Block();
 					paintBlock(blockBoard.getGraphics(), active);
 					gameClock.start();
+					candrop = true;
 					running = true;
 				}
 			}
@@ -112,7 +122,6 @@ public class FourBlocks extends JFrame{
 		
 		start = new JButton("Start");
 		start.addActionListener(go);
-		start.addKeyListener(actions);
 		
 		topPanel = new JPanel();
 		topPanel.setAlignmentX(CENTER_ALIGNMENT);
@@ -124,7 +133,7 @@ public class FourBlocks extends JFrame{
 		blockBoard = new JPanel();
 		bg = Color.GRAY;
 		blockBoard.setBackground(bg);
-		blockBoard.setPreferredSize(new Dimension(250, 500));		
+		blockBoard.setPreferredSize(new Dimension(250, 500));
 		
 		scoreDisplay = new JLabel();
 		scoreDisplay.setText("0");
@@ -148,8 +157,9 @@ public class FourBlocks extends JFrame{
 		all.setPreferredSize(new Dimension(400, 600));
 		all.setAlignmentX(LEFT_ALIGNMENT);
 		
-		all.add(topPanel);
+//		all.add(topPanel);
 		all.add(gameBoard);
+		all.addKeyListener(actions);
 		
 		delay = 1000;
 		gameClock = new Timer(delay, new ActionListener() {
@@ -160,10 +170,12 @@ public class FourBlocks extends JFrame{
 			}
 		});
 
-		
+
 		this.add(all);
 		
 		setVisible(true);
+
+		all.requestFocusInWindow();
 	}
 
 	public void display(Graphics g){
@@ -334,6 +346,7 @@ public class FourBlocks extends JFrame{
 		active = new Block();
 		checkRows();
 		paintBlock(blockBoard.getGraphics(), active);
+		scoreDisplay.setText(Integer.toString(score));
 	}
 	public void checkRows(){
 		Boolean kill = true;
@@ -354,11 +367,7 @@ public class FourBlocks extends JFrame{
 					grid[l][0] = null;
 				}
 				score+= 10;
-				scoreDisplay.setText(Integer.toString(score));
 			}
 		}
-	}
-	public void removeRow(){
-		
 	}
 }
