@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,6 +22,7 @@ public class FourBlocks extends JFrame{
 	JPanel info;
 	JPanel scoreBox;
 	JLabel scoreDisplay;
+	JLabel game;
 	Block active;
 	Color bg;
 	Timer gameClock;
@@ -94,7 +96,10 @@ public class FourBlocks extends JFrame{
 					paintBlock(blockBoard.getGraphics(), active);
 					canMove = true;
 				}else if (!running && arg0.getKeyCode() == KeyEvent.VK_SPACE){
-					header.setText("BEGIN");
+//					header.setText("BEGIN");
+					game.setVisible(false);
+					clearBoard();
+					display(blockBoard.getGraphics());
 					active = new Block();
 					paintBlock(blockBoard.getGraphics(), active);
 					gameClock.start();
@@ -112,6 +117,7 @@ public class FourBlocks extends JFrame{
 					paintBlock(blockBoard.getGraphics(), active);
 					gameClock.start();
 					candrop = true;
+					blockBoard.remove(game);
 					running = true;
 				}
 			}
@@ -129,11 +135,19 @@ public class FourBlocks extends JFrame{
 		topPanel.add(start);
 		
 		//game panel
+		game = new JLabel();
+		game.setPreferredSize(new Dimension(200, 100));
+		game.setAlignmentX(CENTER_ALIGNMENT);
+		game.setAlignmentY(CENTER_ALIGNMENT);
+		game.setText("Press space to begin");
 		
 		blockBoard = new JPanel();
+		blockBoard.setAlignmentY(CENTER_ALIGNMENT);
+		blockBoard.setAlignmentX(CENTER_ALIGNMENT);
 		bg = Color.GRAY;
 		blockBoard.setBackground(bg);
-		blockBoard.setPreferredSize(new Dimension(250, 500));
+		blockBoard.setPreferredSize(new Dimension(251, 501));
+		blockBoard.add(game);
 		
 		scoreDisplay = new JLabel();
 		scoreDisplay.setText("0");
@@ -149,7 +163,7 @@ public class FourBlocks extends JFrame{
 		
 		gameBoard = new JPanel();
 		gameBoard.setPreferredSize(new Dimension(400, 550));
-		
+		gameBoard.setBackground(bg);
 		gameBoard.add(blockBoard);
 		gameBoard.add(info);
 
@@ -179,38 +193,41 @@ public class FourBlocks extends JFrame{
 	}
 
 	public void display(Graphics g){
+		Image buffer = createImage(blockBoard.getWidth(), blockBoard.getHeight());
+		Graphics gt = buffer.getGraphics();
 		for (int i = 0; i < 10; i++){
 			for (int j = 0; j < 20; j++){
 				if (grid[i][j] == null){
-					g.setColor(bg);
+					gt.setColor(Color.GRAY);
 				}else{
 					switch (grid[i][j]){
 					case I:
-						g.setColor(Color.CYAN);
+						gt.setColor(Color.CYAN);
 						break;
 					case J:
-						g.setColor(Color.BLUE);
+						gt.setColor(Color.BLUE);
 						break;
 					case L:
-						g.setColor(Color.ORANGE);
+						gt.setColor(Color.ORANGE);
 						break;
 					case O:
-						g.setColor(Color.YELLOW);
+						gt.setColor(Color.YELLOW);
 						break;
 					case S:
-						g.setColor(Color.GREEN);
+						gt.setColor(Color.GREEN);
 						break;
 					case T:
-						g.setColor(Color.MAGENTA);
+						gt.setColor(Color.MAGENTA);
 						break;
 					case Z:
-						g.setColor(Color.RED);
+						gt.setColor(Color.RED);
 						break;
 					}
 				}
-				paintSquare(i, j, g);
+				paintSquare(i, j, gt);
 			}
 		}
+		g.drawImage(buffer, 0, 0, this);
 	}
 	public void paintBlock(Graphics g,Block b){
 		g.setColor(b.colour);
@@ -218,12 +235,23 @@ public class FourBlocks extends JFrame{
 			for (int j = 0; j < b.sizey; j++){
 				if (b.filled[j][i])
 					paintSquare(b.x + i, b.y + j, g);
+				else{
+					clearSquare(b.x + i, b.y + j, g);
+				}
 			}
 		}
 	}
 	public void paintSquare(int x, int y, Graphics g){
 		g.fillRect(x * 25,y * 25,25,25);
 		Color old = g.getColor();
+		g.setColor(Color.BLACK);
+		g.drawRect(x * 25,y * 25,25,25);
+		g.setColor(old);
+	}
+	public void clearSquare(int x, int y, Graphics g){
+		Color old = g.getColor();
+		g.setColor(new Color(0, 0, 0, 0));
+		g.fillRect(x * 25,y * 25,25,25);
 		g.setColor(Color.BLACK);
 		g.drawRect(x * 25,y * 25,25,25);
 		g.setColor(old);
@@ -245,16 +273,20 @@ public class FourBlocks extends JFrame{
 	public void fall(){
 		while (checkColision(0,1)){
 			active.y++;
-			display(blockBoard.getGraphics());
-			paintBlock(blockBoard.getGraphics(), active);
+			if (!running)
+				gameOver();
 		}
+		display(blockBoard.getGraphics());
+		paintBlock(blockBoard.getGraphics(), active);
 	}
 	public void down(){
 		if (checkColision(0,1)){
 			active.y++;
-			display(blockBoard.getGraphics());
-			paintBlock(blockBoard.getGraphics(), active);
 		}
+		display(blockBoard.getGraphics());
+		paintBlock(blockBoard.getGraphics(), active);
+		if (!running)
+			gameOver();
 	}
 	public void left(){
 		if (checkColision(-1,0)){
@@ -339,14 +371,19 @@ public class FourBlocks extends JFrame{
 	public void setBlock(){
 		for (int i = 0; i < active.sizex; i++){
 			for (int j = 0; j < active.sizey; j++){
-				if (active.filled[j][i])
+				if (active.filled[j][i]){
+					if (i + active.y == 0){
+						running = false;
+					}
 					grid[i + active.x][j + active.y] = active.type;
+				}
 			}
 		}
-		active = new Block();
 		checkRows();
 		paintBlock(blockBoard.getGraphics(), active);
 		scoreDisplay.setText(Integer.toString(score));
+		active = new Block();
+			
 	}
 	public void checkRows(){
 		Boolean kill = true;
@@ -367,6 +404,20 @@ public class FourBlocks extends JFrame{
 					grid[l][0] = null;
 				}
 				score+= 10;
+			}
+		}
+	}
+	public void gameOver(){
+		gameClock.stop();
+		running = false;
+		canMove = false;
+		game.setText("Game Over!");
+		game.setVisible(true);
+	}
+	public void clearBoard(){
+		for (int i = 0; i < 20; i++){
+			for (int j = 0; j < 10; j++){
+					grid[j][i] = null;
 			}
 		}
 	}
