@@ -20,9 +20,11 @@ public class FourBlocks extends JFrame{
 	JPanel blockBoard;
 	JPanel info;
 	JPanel scoreBox;
+	JPanel nextDisplay;
 	JLabel scoreDisplay;
 	JLabel game;
 	Block active;
+	Block next;
 	Timer gameClock;
 	static Timer refresh;
 	Block.blockType[][] grid;
@@ -93,6 +95,7 @@ public class FourBlocks extends JFrame{
 					running = true;
 					canMove = true;
 					candrop = true;
+					display(blockBoard.getGraphics());
 				}
 			}
 		};
@@ -101,8 +104,19 @@ public class FourBlocks extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (active == null){
-					active = new Block();
+					if (next != null)
+						active = new Block(next.type);
+					else
+						active = new Block();
+					next = new Block();
+					next.x = 0;
+					next.y = 0;
+					nextDisplay.getGraphics().setColor(Color.BLACK);
+					nextDisplay.getGraphics().fillRect(0, 0, 110, 85);
+					paintBlock(nextDisplay.getGraphics(), next);
+					
 					canMove = true;
+					display(blockBoard.getGraphics());
 				}
 				else if (canMove)
 					down();
@@ -127,14 +141,19 @@ public class FourBlocks extends JFrame{
 		scoreDisplay = new JLabel();
 		scoreDisplay.setText("0");
 		
+		nextDisplay = new JPanel();
+		nextDisplay.setBackground(Color.BLACK);
+		nextDisplay.setPreferredSize(new Dimension(110,85));
+		
 		scoreBox = new JPanel();
 		scoreBox.setPreferredSize(new Dimension(75,50));
 		scoreBox.add(scoreDisplay);
 		
 		info = new JPanel();
-		info.setPreferredSize(new Dimension(100, this.getHeight()));
+		info.setPreferredSize(new Dimension(120, this.getHeight()));
 		info.setBackground(new Color(102, 204, 204));
 		info.add(scoreBox);
+		info.add(nextDisplay);
 		
 		gameBoard = new JPanel();
 		gameBoard.setPreferredSize(new Dimension(400, this.getHeight()));

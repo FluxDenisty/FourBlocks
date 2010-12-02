@@ -31,7 +31,6 @@ public class Block {
 		initBlock();
 	}
 	public void initBlock(){
-		x = 5;
 		dir = 0;
 		if (type == blockType.I){
 			colour = Color.CYAN;
@@ -77,6 +76,7 @@ public class Block {
 			filled = model[0];
 		}
 		y = - sizey/2;
+		x = 5 - sizex/2;
 	}
 	
 }
