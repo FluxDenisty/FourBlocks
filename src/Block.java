@@ -76,7 +76,7 @@ public class Block {
 			model =  FourBlocks.lib.ZBlock;
 			filled = model[0];
 		}
-		y = -sizey;
+		y = - sizey/2;
 	}
 	
 }

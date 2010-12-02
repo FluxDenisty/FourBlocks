@@ -70,7 +70,7 @@ public class FourBlocks extends JFrame{
 			
 			@Override
 			public void keyPressed(KeyEvent arg0) {  
-				if (canMove && running){  //Take ACTION
+				if (canMove && running && active != null){  //Take ACTION
 					canMove = false;
 					if (arg0.getKeyCode() == KeyEvent.VK_DOWN){
 						down();
@@ -93,7 +93,6 @@ public class FourBlocks extends JFrame{
 					running = true;
 					canMove = true;
 					candrop = true;
-					display(blockBoard.getGraphics());
 				}
 			}
 		};
@@ -101,8 +100,13 @@ public class FourBlocks extends JFrame{
 		gameClock = new Timer(delay, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (canMove)
+				if (active == null){
+					active = new Block();
+					canMove = true;
+				}
+				else if (canMove)
 					down();
+				display(blockBoard.getGraphics());
 			}
 		});
 		
@@ -166,7 +170,7 @@ public class FourBlocks extends JFrame{
 					case J:
 						gt.setColor(Color.BLUE);
 						break;
-					case L:
+					case L:	
 						gt.setColor(Color.ORANGE);
 						break;
 					case O:
@@ -186,7 +190,8 @@ public class FourBlocks extends JFrame{
 				paintSquare(i, j, gt);
 			}
 		}
-		paintBlock(gt, active);
+		if (active != null)
+			paintBlock(gt, active);
 		g.drawImage(buffer, 0, 0, this);
 	}
 	public void paintBlock(Graphics g,Block b){
@@ -293,7 +298,9 @@ public class FourBlocks extends JFrame{
 		}
 		checkRows();
 		scoreDisplay.setText(Integer.toString(score));
-		active = new Block();
+		display(blockBoard.getGraphics());
+		active = null;
+		canMove = false;
 			
 	}
 	public void checkRows(){
