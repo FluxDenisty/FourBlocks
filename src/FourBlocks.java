@@ -93,15 +93,15 @@ public class FourBlocks extends JFrame{
 					}else if (arg0.getKeyCode() == KeyEvent.VK_SPACE){
 							fall();
 					}
-					paintBlock(blockBoard.getGraphics(), active);
+//					paintBlock(blockBoard.getGraphics(), active);
 					canMove = true;
-				}else if (!running && arg0.getKeyCode() == KeyEvent.VK_SPACE){
+				}else if (!running && arg0.getKeyCode() == KeyEvent.VK_ENTER){
 //					header.setText("BEGIN");
 					game.setVisible(false);
 					clearBoard();
-					display(blockBoard.getGraphics());
 					active = new Block();
-					paintBlock(blockBoard.getGraphics(), active);
+					display(blockBoard.getGraphics());
+//					paintBlock(blockBoard.getGraphics(), active);
 					gameClock.start();
 					running = true;
 				}
@@ -114,7 +114,7 @@ public class FourBlocks extends JFrame{
 				if (e.getActionCommand().equals("Start") && !running){
 					header.setText("BEGIN");
 					active = new Block();
-					paintBlock(blockBoard.getGraphics(), active);
+					display(blockBoard.getGraphics());
 					gameClock.start();
 					candrop = true;
 					blockBoard.remove(game);
@@ -139,7 +139,7 @@ public class FourBlocks extends JFrame{
 		game.setPreferredSize(new Dimension(200, 100));
 		game.setAlignmentX(CENTER_ALIGNMENT);
 		game.setAlignmentY(CENTER_ALIGNMENT);
-		game.setText("Press space to begin");
+		game.setText("Press enter to begin");
 		
 		blockBoard = new JPanel();
 		blockBoard.setAlignmentY(CENTER_ALIGNMENT);
@@ -227,6 +227,7 @@ public class FourBlocks extends JFrame{
 				paintSquare(i, j, gt);
 			}
 		}
+		paintBlock(gt, active);
 		g.drawImage(buffer, 0, 0, this);
 	}
 	public void paintBlock(Graphics g,Block b){
@@ -277,14 +278,13 @@ public class FourBlocks extends JFrame{
 				gameOver();
 		}
 		display(blockBoard.getGraphics());
-		paintBlock(blockBoard.getGraphics(), active);
 	}
 	public void down(){
 		if (checkColision(0,1)){
 			active.y++;
 		}
 		display(blockBoard.getGraphics());
-		paintBlock(blockBoard.getGraphics(), active);
+//		paintBlock(blockBoard.getGraphics(), active);
 		if (!running)
 			gameOver();
 	}
@@ -292,14 +292,14 @@ public class FourBlocks extends JFrame{
 		if (checkColision(-1,0)){
 			active.x--;
 			display(blockBoard.getGraphics());
-			paintBlock(blockBoard.getGraphics(), active);
+//			paintBlock(blockBoard.getGraphics(), active);
 		}
 	}
 	public void right(){
 		if (checkColision(1,0)){
 			active.x++;
 			display(blockBoard.getGraphics());
-			paintBlock(blockBoard.getGraphics(), active);	
+//			paintBlock(blockBoard.getGraphics(), active);	
 		}
 	}
 	public void rotate(){
@@ -380,7 +380,7 @@ public class FourBlocks extends JFrame{
 			}
 		}
 		checkRows();
-		paintBlock(blockBoard.getGraphics(), active);
+		display(blockBoard.getGraphics());
 		scoreDisplay.setText(Integer.toString(score));
 		active = new Block();
 			
