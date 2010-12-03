@@ -1,28 +1,33 @@
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 
 public class FourBlocks extends JFrame{
 	
 	public static BlockLib lib;
-	JLabel header;
-	JButton start;
 	JPanel all;
 	JPanel topPanel;
 	JPanel gameBoard;
 	JPanel blockBoard;
 	JPanel info;
 	JPanel scoreBox;
+	JPanel lineBox;
 	JPanel nextDisplay;
 	JLabel scoreDisplay;
 	JLabel game;
+	JLabel lineText;
+	JLabel linenum;
+	JLabel scoreText;
 	Block active;
 	Block next;
 	Timer gameClock;
@@ -30,7 +35,10 @@ public class FourBlocks extends JFrame{
 	Block.blockType[][] grid;
 	Color bg = Color.GRAY;
 	int score = 0;
+	int lines = 0;
 	int delay = 1000;
+	int level = 1;
+	int linesTill;
 	Boolean canMove = true;
 	Boolean running = false;
 	Boolean candrop = true;
@@ -89,12 +97,20 @@ public class FourBlocks extends JFrame{
 					canMove = true;
 				}else if (!running && arg0.getKeyCode() == KeyEvent.VK_ENTER){ //Begin new game
 					game.setVisible(false);
+					blockBoard.remove(game);
 					clearBoard();
 					active = new Block();
 					gameClock.start();
 					running = true;
 					canMove = true;
 					candrop = true;
+					score = 0;
+					lines = 0;
+					level = 1;
+					linesTill = 15;
+					scoreDisplay.setText("0");
+					linenum.setText("0");
+					gameClock.setDelay(delay);
 					display(blockBoard.getGraphics());
 				}
 			}
@@ -138,21 +154,42 @@ public class FourBlocks extends JFrame{
 		blockBoard.setPreferredSize(new Dimension(251, 501));
 		blockBoard.add(game);
 		
+		scoreText = new JLabel();
+		scoreText.setPreferredSize(new Dimension(70,10));
+		scoreText.setText("   SCORE");
+		
 		scoreDisplay = new JLabel();
 		scoreDisplay.setText("0");
+		
+		lineText = new JLabel();
+		lineText.setText("Lines Done");
+		
+		linenum = new JLabel();
+		linenum.setAlignmentX(CENTER_ALIGNMENT);
+		linenum.setText("0");
 		
 		nextDisplay = new JPanel();
 		nextDisplay.setBackground(Color.BLACK);
 		nextDisplay.setPreferredSize(new Dimension(110,85));
 		
+		lineBox = new JPanel();
+		lineBox.setPreferredSize(new Dimension(80,50));
+		lineBox.setBackground(Color.ORANGE);
+		lineBox.setAlignmentX(CENTER_ALIGNMENT);
+		lineBox.add(lineText);
+		lineBox.add(linenum);
+		
 		scoreBox = new JPanel();
-		scoreBox.setPreferredSize(new Dimension(75,50));
+		scoreBox.setPreferredSize(new Dimension(80,50));
+		scoreBox.setAlignmentX(CENTER_ALIGNMENT);
+		scoreBox.add(scoreText);
 		scoreBox.add(scoreDisplay);
 		
 		info = new JPanel();
 		info.setPreferredSize(new Dimension(120, this.getHeight()));
-		info.setBackground(new Color(102, 204, 204));
+		info.setBackground(new Color(148, 112, 255));
 		info.add(scoreBox);
+		info.add(lineBox);
 		info.add(nextDisplay);
 		
 		gameBoard = new JPanel();
@@ -320,10 +357,16 @@ public class FourBlocks extends JFrame{
 		display(blockBoard.getGraphics());
 		active = null;
 		canMove = false;
+		if (linesTill  <= 0){
+			level++;
+			linesTill = level * 5 + 10;
+			gameClock.setDelay(delay - level * 100);
+		}	
 			
 	}
 	public void checkRows(){
 		Boolean kill = true;
+		int temp = lines;
 		for (int i = 0; i < 20; i++){
 			kill = true;
 			for (int j = 0; j < 10; j++){
@@ -340,9 +383,15 @@ public class FourBlocks extends JFrame{
 				for (int l = 0;l < 10; l++){
 					grid[l][0] = null;
 				}
+				lines++;
+				linesTill--;
+				linenum.setText(Integer.toString(lines));
 				score+= 10;
 			}
 		}
+		temp = lines - temp;
+		if (temp > 0)
+			score += (temp-1)*2*10;
 	}
 	public void gameOver(){
 		gameClock.stop();
@@ -350,6 +399,7 @@ public class FourBlocks extends JFrame{
 		canMove = false;
 		display(blockBoard.getGraphics());
 		game.setText("Game Over!");
+		blockBoard.add(game,0);
 		game.setVisible(true);
 	}
 	public void clearBoard(){
