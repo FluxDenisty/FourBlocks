@@ -1,16 +1,13 @@
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 
 public class FourBlocks extends JFrame{
 	
@@ -129,7 +126,7 @@ public class FourBlocks extends JFrame{
 					next.y = 0;
 					nextDisplay.getGraphics().setColor(Color.BLACK);
 					nextDisplay.getGraphics().fillRect(0, 0, 110, 85);
-					paintBlock(nextDisplay.getGraphics(), next);
+					Display.paintBlock(nextDisplay.getGraphics(), next);
 					
 					canMove = true;
 					display(blockBoard.getGraphics());
@@ -212,71 +209,10 @@ public class FourBlocks extends JFrame{
 	}
 
 	public void display(Graphics g){
-		Image buffer = createImage(blockBoard.getWidth(), blockBoard.getHeight());
-		Graphics gt = buffer.getGraphics();
-		for (int i = 0; i < 10; i++){
-			for (int j = 0; j < 20; j++){
-				if (grid[i][j] == null){
-					gt.setColor(Color.GRAY);
-				}else{
-					switch (grid[i][j]){
-					case I:
-						gt.setColor(Color.CYAN);
-						break;
-					case J:
-						gt.setColor(Color.BLUE);
-						break;
-					case L:	
-						gt.setColor(Color.ORANGE);
-						break;
-					case O:
-						gt.setColor(Color.YELLOW);
-						break;
-					case S:
-						gt.setColor(Color.GREEN);
-						break;
-					case T:
-						gt.setColor(Color.MAGENTA);
-						break;
-					case Z:
-						gt.setColor(Color.RED);
-						break;
-					}
-				}
-				paintSquare(i, j, gt);
-			}
-		}
-		if (active != null)
-			paintBlock(gt, active);
-		g.drawImage(buffer, 0, 0, this);
+		Image buffer = createImage(blockBoard.getWidth(),blockBoard.getHeight());
+		Display.go(g,buffer,grid,active,this);
 	}
-	public void paintBlock(Graphics g,Block b){
-		g.setColor(b.colour);
-		for (int i = 0; i < b.sizex; i++){
-			for (int j = 0; j < b.sizey; j++){
-				if (b.filled[j][i])
-					paintSquare(b.x + i, b.y + j, g);
-				else{
-					clearSquare(b.x + i, b.y + j, g);
-				}
-			}
-		}
-	}
-	public void paintSquare(int x, int y, Graphics g){
-		g.fillRect(x * 25,y * 25,25,25);
-		Color old = g.getColor();
-		g.setColor(Color.BLACK);
-		g.drawRect(x * 25,y * 25,25,25);
-		g.setColor(old);
-	}
-	public void clearSquare(int x, int y, Graphics g){
-		Color old = g.getColor();
-		g.setColor(new Color(0, 0, 0, 0));
-		g.fillRect(x * 25,y * 25,25,25);
-		g.setColor(Color.BLACK);
-		g.drawRect(x * 25,y * 25,25,25);
-		g.setColor(old);
-	}
+	
 	
 	public void fall(){
 		while (checkColision(0,1)){
@@ -288,9 +224,9 @@ public class FourBlocks extends JFrame{
 	public void down(){
 		if (checkColision(0,1)){
 			active.y++;
+			if (!running)
+				gameOver();
 		}
-		if (!running)
-			gameOver();
 	}
 	public void left(){
 		if (checkColision(-1,0)){
