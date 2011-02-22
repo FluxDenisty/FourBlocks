@@ -19,14 +19,18 @@ public class FourBlocks extends JFrame{
 	JPanel info;
 	JPanel scoreBox;
 	JPanel lineBox;
-	JPanel nextDisplay;
 	JLabel scoreDisplay;
+	JPanel nextDisplay;
+	JPanel holdDisplay;
 	JLabel game;
 	JLabel lineText;
+	JLabel nextText;
+	JLabel holdText;
 	JLabel linenum;
 	JLabel scoreText;
 	Block active;
 	Block next;
+	Block hold;
 	Timer gameClock;
 	static Timer refresh;
 	Block.blockType[][] grid;
@@ -38,7 +42,8 @@ public class FourBlocks extends JFrame{
 	int linesTill;
 	Boolean canMove = true;
 	Boolean running = false;
-	Boolean candrop = true;
+	Boolean canDrop = true;
+	Boolean canHold = true;
 	
 	public static void main(String[] args) {
 		lib = new BlockLib();
@@ -71,7 +76,7 @@ public class FourBlocks extends JFrame{
 			public void keyReleased(KeyEvent arg0) {
 				// TODO Auto-generated method stub
 				if (arg0.getKeyCode() == KeyEvent.VK_SPACE){
-					candrop = true;
+					canDrop = true;
 				}
 			}
 			
@@ -79,16 +84,18 @@ public class FourBlocks extends JFrame{
 			public void keyPressed(KeyEvent arg0) {  
 				if (canMove && running && active != null){  //Take ACTION
 					canMove = false;
-					if (arg0.getKeyCode() == KeyEvent.VK_DOWN){
+					if (arg0.getKeyCode() == KeyEvent.VK_DOWN || arg0.getKeyCode() == KeyEvent.VK_S){
 						down();
-					}else if (arg0.getKeyCode() == KeyEvent.VK_UP){
+					}else if (arg0.getKeyCode() == KeyEvent.VK_UP || arg0.getKeyCode() == KeyEvent.VK_W){
 						rotate();
-					}else if (arg0.getKeyCode() == KeyEvent.VK_LEFT){
+					}else if (arg0.getKeyCode() == KeyEvent.VK_LEFT || arg0.getKeyCode() == KeyEvent.VK_A){
 						left();
-					}else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT){
+					}else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT || arg0.getKeyCode() == KeyEvent.VK_D){
 						right();
 					}else if (arg0.getKeyCode() == KeyEvent.VK_SPACE){
-							fall();
+						fall();
+					}else if (arg0.getKeyCode() == KeyEvent.VK_H){
+						hold();
 					}
 					display(blockBoard.getGraphics());
 					canMove = true;
@@ -100,7 +107,7 @@ public class FourBlocks extends JFrame{
 					gameClock.start();
 					running = true;
 					canMove = true;
-					candrop = true;
+					canDrop = true;
 					score = 0;
 					lines = 0;
 					level = 1;
@@ -117,19 +124,7 @@ public class FourBlocks extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (active == null){
-					if (next != null)
-						active = new Block(next.type);
-					else
-						active = new Block();
-					next = new Block();
-					next.x = 0;
-					next.y = 0;
-					nextDisplay.getGraphics().setColor(Color.BLACK);
-					nextDisplay.getGraphics().fillRect(0, 0, 110, 85);
-					Display.paintBlock(nextDisplay.getGraphics(), next);
-					
-					canMove = true;
-					display(blockBoard.getGraphics());
+					loadNext();
 				}
 				else if (canMove)
 					down();
@@ -165,9 +160,19 @@ public class FourBlocks extends JFrame{
 		linenum.setAlignmentX(CENTER_ALIGNMENT);
 		linenum.setText("0");
 		
+		nextText = new JLabel();
+		nextText.setText("Next Block");
+		
 		nextDisplay = new JPanel();
 		nextDisplay.setBackground(Color.BLACK);
 		nextDisplay.setPreferredSize(new Dimension(110,85));
+		
+		holdText = new JLabel();
+		holdText.setText("HOLD (press H)");
+		
+		holdDisplay = new JPanel();
+		holdDisplay.setBackground(Color.WHITE);
+		holdDisplay.setPreferredSize(new Dimension(110,85));
 		
 		lineBox = new JPanel();
 		lineBox.setPreferredSize(new Dimension(80,50));
@@ -187,7 +192,10 @@ public class FourBlocks extends JFrame{
 		info.setBackground(new Color(148, 112, 255));
 		info.add(scoreBox);
 		info.add(lineBox);
+		info.add(nextText);
 		info.add(nextDisplay);
+		info.add(holdText);
+		info.add(holdDisplay);
 		
 		gameBoard = new JPanel();
 		gameBoard.setPreferredSize(new Dimension(400, this.getHeight()));
@@ -213,7 +221,42 @@ public class FourBlocks extends JFrame{
 		Display.go(g,buffer,grid,active,this);
 	}
 	
-	
+	public void loadNext() {
+		canHold = true;
+		if (next != null)
+			active = new Block(next.type);
+		else
+			active = new Block();
+		next = new Block();
+		next.x = 0;
+		next.y = 0;
+		nextDisplay.getGraphics().setColor(Color.BLACK);
+		nextDisplay.getGraphics().fillRect(0, 0, 110, 85);
+		Display.paintBlock(nextDisplay.getGraphics(), next);
+		
+		canMove = true;
+		display(blockBoard.getGraphics());
+	}
+
+	public void hold(){
+		if (!canHold)
+			return;
+		canHold = false;
+		if (hold == null){
+			hold = new Block(active.type);
+			hold.x = hold.y = 0;
+			loadNext(); 
+		}else{
+			Block.blockType temp = active.type;
+			active = new Block(hold.type);
+			hold = new Block(temp);
+		}
+		hold.x = hold.y = 0;
+		holdDisplay.getGraphics().setColor(Color.WHITE);
+		holdDisplay.getGraphics().fillRect(0, 0, 110, 85);
+		Display.paintBlock(holdDisplay.getGraphics(), hold);
+		display(blockBoard.getGraphics());
+	}
 	public void fall(){
 		while (checkColision(0,1)){
 			active.y++;
@@ -283,6 +326,7 @@ public class FourBlocks extends JFrame{
 				if (active.filled[j][i]){
 					if (i + active.y == 0){
 						running = false;
+						gameOver();
 					}
 					grid[i + active.x][j + active.y] = active.type;
 				}
